@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "chart.js": "^4.4.2",
     "clsx": "^2.1.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "next": "14.2.3",
     "react": "^18",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "react-modal": "^3.16.1",
     "tailwind-merge": "^2.3.0"

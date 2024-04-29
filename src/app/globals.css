@@ -45,6 +45,10 @@ code {
   color: #61dafb;
 }
 
+.table-cell {
+  @apply border border-gray-300 p-2 text-center;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
