@@ -1,78 +1,38 @@
-'use client';
-
-import { KeyboardEvent, Suspense, useEffect, useState } from 'react';
-import PokemonCard from './PokemonCard';
-import Sort from './Sort';
-import Pagination from './Pagination';
-import Chat from './Chat';
+import Chat from "./Chat";
+import PokemonCard from "./PokemonCard";
+import Pagination from "./PokemonPagination";
 
 interface PokemonListProps {
-  initialPokemons: Pokemon[];
+  pokemons: Pokemon[];
   totalPages: number;
   currentPage: number;
 }
 
-const PokemonList = ({
-  initialPokemons,
+const PokemonList = async ({
+  pokemons,
   totalPages,
   currentPage,
 }: PokemonListProps) => {
-  const [searchText, setSearchText] = useState('');
-  const [sortValue, setSortValue] = useState('default');
+  const startIndex = (currentPage - 1) * 20;
+  const endIndex = currentPage * 20 <= 1302 ? currentPage * 20 : 1302;
 
-  const [pokemons, setPokemons] = useState(initialPokemons);
-  const [sortedPokemons, setSortedPokemons] = useState(pokemons);
+  const pokemonsToRender = pokemons.slice(startIndex, endIndex);
 
-  const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      const filteredPokemons = initialPokemons.filter((pokemon) =>
-        pokemon.name.toLowerCase().includes(searchText.toLowerCase())
-      );
-      setPokemons(filteredPokemons);
-    }
-  };
-
-  useEffect(() => {
-    if (searchText === '') {
-      setPokemons(initialPokemons);
-    }
-  }, [searchText, initialPokemons]);
-
-  useEffect(() => {
-    if (sortValue === 'asc') {
-      setSortedPokemons(
-        [...pokemons].sort((a, b) => a.name.localeCompare(b.name))
-      );
-    } else if (sortValue === 'desc') {
-      setSortedPokemons(
-        [...pokemons].sort((a, b) => b.name.localeCompare(a.name))
-      );
-    } else {
-      setSortedPokemons(pokemons);
-    }
-  }, [sortValue, pokemons]);
+  const pokemonsDetails = await Promise.all(
+    pokemonsToRender.map(async (pokemon) => {
+      const response = await fetch(pokemon.url);
+      const data = await response.json();
+      return data;
+    }),
+  );
 
   return (
     <div className="px-6 md:px-10">
-      <div className="flex md:flex-row flex-col md:items-center mb-6 justify-between gap-6">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          onKeyUp={handleKeyUp}
-          className="block w-full px-4 rounded-md shadow-sm py-2 md:w-2/5 placeholder:text-left"
-          autoComplete="off"
-        />
-
-        <Sort onSortChange={(value) => setSortValue(value)} />
-      </div>
-
-      {sortedPokemons.length === 0 ? (
-        <p className="text-white text-4xl">No pokemon found</p>
+      {pokemonsDetails.length === 0 ? (
+        <p className="text-4xl text-white">No pokemon found</p>
       ) : (
-        <div className="grid md:grid-cols-4 gap-8 sm:grid-cols-2 border-t border-gray-600 pt-6">
-          {sortedPokemons.map((pokemon, index) => {
+        <div className="grid grid-cols-2 gap-8 pt-6 md:grid-cols-4 lg:grid-cols-5">
+          {pokemonsDetails.map((pokemon, index) => {
             return <PokemonCard key={index} pokemon={pokemon} />;
           })}
         </div>

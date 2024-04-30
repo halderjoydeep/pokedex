@@ -1,15 +1,17 @@
-import { cn } from '@/lib/utils';
-import React, { useState } from 'react';
+"use client";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 const Chat = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState<string[]>([]);
 
   const sendMessage = () => {
-    if (message.trim() !== '') {
+    if (message.trim() !== "") {
       setChatHistory((prev) => [...prev, message]);
-      setMessage('');
+      setMessage("");
     }
   };
 
@@ -18,55 +20,55 @@ const Chat = () => {
   };
 
   return (
-    <div>
+    <div className="text-gray-700">
       <div
         className={cn(
-          'fixed right-10 bottom-[92px] flex flex-col w-[300px] h-[300px] border rounded-md overflow-hidden bg-white shadow-sm',
+          "fixed bottom-[92px] right-10 flex h-[300px] w-[300px] flex-col overflow-hidden rounded-md border bg-white shadow-sm",
           {
             hidden: !isOpen,
             flex: isOpen,
-          }
+          },
         )}
       >
-        <div className="p-2 border-b flex items-center justify-between">
+        <div className="flex items-center justify-between border-b p-2">
           <div>Chat</div>
           <div
-            className="w-5 h-5 flex items-center justify-center cursor-pointer bg-[#282828] text-white text-xs rounded-full p-1"
+            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-[#282828] p-1 text-xs text-white"
             onClick={toggleChat}
           >
             X
           </div>
         </div>
-        <div className="h-40 overflow-y-auto p-2 flex-1">
+        <div className="h-40 flex-1 overflow-y-auto p-2">
           {chatHistory.map((message, index) => (
             <div
               key={index}
-              className="text-sm flex justify-end bg-gray-200 my-1 py-1 px-3 w-fit rounded-md max-w-[75%] break-all ml-auto"
+              className="my-1 ml-auto flex w-fit max-w-[75%] justify-end break-all rounded-md bg-gray-200 px-3 py-1 text-sm"
             >
               {message}
             </div>
           ))}
         </div>
-        <div className="p-2 border-t flex flex-row items-center justify-between gap-2">
+        <div className="flex flex-row items-center justify-between gap-2 border-t p-2">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="flex-1 p-2 rounded-md border"
+            className="flex-1 rounded-md border p-2 text-sm"
             placeholder="Type your message..."
-            onKeyUp={(e) => e.key === 'Enter' && sendMessage()}
+            onKeyUp={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button
-            className="bg-[#282828] text-white font-bold py-2 px-4 rounded"
+          <Button
+            className="rounded bg-[#282828] px-4 py-2 font-bold text-white"
             onClick={sendMessage}
           >
             Send
-          </button>
+          </Button>
         </div>
       </div>
 
       <button
-        className="fixed bottom-10 right-5 z-50 bg-blue-600 hover:bg-blue-700 p-4 rounded-full flex items-center justify-center shadow-lg border border-white"
+        className="fixed bottom-10 right-5 z-50 flex items-center justify-center rounded-full border border-white bg-blue-600 p-4 shadow-lg hover:bg-blue-700"
         onClick={toggleChat}
       >
         <svg

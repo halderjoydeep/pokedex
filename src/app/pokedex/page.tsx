@@ -1,46 +1,59 @@
-import PokemonList from '@/components/PokemonList';
+import Header from "@/components/Header";
+import PokemonList from "@/components/PokemonList";
 
 interface PokeDexProps {
   searchParams: {
     page: string;
+    s: string;
+    sort: "asc" | "desc" | "default";
   };
 }
 
 async function PokeDex({ searchParams }: PokeDexProps) {
-  const { page } = searchParams;
+  const { page, s, sort } = searchParams;
 
   const currentPage = +page || 1;
 
-  let initialPokemons: Pokemon[] = [];
-  let totalPages = 0;
+  let pokemons: Pokemon[] = [];
 
   try {
     const response = await fetch(
-      `https://pokeapi.co/api/v2/pokemon${
-        currentPage > 1 ? `?offset=${(currentPage - 1) * 20}&limit=20` : ''
-      }`
+      "https://pokeapi.co/api/v2/pokemon?limit=1302",
     );
     if (response.ok) {
       const data = await response.json();
-      initialPokemons = data.results;
-      totalPages = Math.ceil(data.count / 20);
+      pokemons = data.results;
     }
   } catch {
-    console.log('Error fetching the API');
+    console.log("Error fetching the API");
   }
 
+  if (s) {
+    pokemons = pokemons.filter((pokemon) =>
+      pokemon.name.toLowerCase().includes(s.toLowerCase()),
+    );
+  }
+
+  if (sort) {
+    if (sort === "asc") {
+      pokemons = pokemons.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sort === "desc") {
+      pokemons = pokemons.sort((a, b) => b.name.localeCompare(a.name));
+    }
+  }
+
+  const totalPages = Math.ceil(pokemons.length / 20);
+
   return (
-    <div>
-      <h1 className="text-center text-white text-xl font-bold my-6">
-        Welcome to pokedex !
-      </h1>
+    <main>
+      <Header />
 
       <PokemonList
-        initialPokemons={initialPokemons}
+        pokemons={pokemons}
         totalPages={totalPages}
         currentPage={currentPage}
       />
-    </div>
+    </main>
   );
 }
 

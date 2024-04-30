@@ -1,51 +1,34 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-import Modal from 'react-modal';
-import BarChart from './BarChart';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { Download } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef } from "react";
+import Modal from "react-modal";
+import BarChart from "./BarChart";
+import { Card } from "./ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 
 interface PokemonCardProps {
-  pokemon: Pokemon;
+  pokemon: PokemonDetail;
 }
 
 const customStyles = {
   content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    background: 'black',
-    color: 'white',
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    background: "black",
+    color: "white",
   },
-  overlay: { backgroundColor: 'gray' },
+  overlay: { backgroundColor: "gray" },
 };
 
 const PokemonCard = ({ pokemon }: PokemonCardProps) => {
-  const [pokemonDetail, setPokemonDetail] = useState<PokemonDetail | null>(
-    null
-  );
-
-  async function fetchPokemonDetail() {
-    try {
-      const response = await fetch(pokemon.url);
-      if (response.ok) {
-        try {
-          const data = await response.json();
-          setPokemonDetail(data);
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    } catch (error) {
-      console.log('Error fetching the API');
-    }
-  }
-
   const modalRef = useRef(null);
 
   const downloadPdf = async () => {
@@ -54,19 +37,22 @@ const PokemonCard = ({ pokemon }: PokemonCardProps) => {
     if (!inputData) return;
 
     try {
-      const canvas = await html2canvas(inputData, { scale: 3 });
-      const imgData = canvas.toDataURL('image/png');
+      const canvas = await html2canvas(inputData, {
+        scale: 3,
+        backgroundColor: "hsla(20 14.3% 4.1%)",
+      });
+      const imgData = canvas.toDataURL("image/png");
 
       const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
+        orientation: "portrait",
+        unit: "px",
         format: [canvas.width, canvas.height],
       });
 
       const width = pdf.internal.pageSize.getWidth();
       const height = (canvas.height * width) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+      pdf.addImage(imgData, "PNG", 0, 0, width, height);
       pdf.save(`${pokemon.name}.pdf`);
     } catch (error) {
       console.log(error);
@@ -74,39 +60,52 @@ const PokemonCard = ({ pokemon }: PokemonCardProps) => {
   };
 
   useEffect(() => {
-    Modal.setAppElement('body');
+    Modal.setAppElement("body");
   }, []);
 
   return (
     <>
-      <div
-        onClick={fetchPokemonDetail}
-        className="p-6 bg-[#61dafb] flex items-center hover:scale-105 transition-colors justify-center cursor-pointer hover:bg-yellow-500 shadow-md rounded-md capitalize font-code"
-      >
-        {pokemon.name}
-      </div>
-
-      {pokemonDetail && (
-        <Modal
-          isOpen={pokemonDetail !== null}
-          style={customStyles}
-          contentLabel={pokemonDetail?.name || ''}
-          onRequestClose={() => {
-            setPokemonDetail(null);
-          }}
-        >
-          <div
-            className="relative flex flex-col items-center bg-black px-6"
-            ref={modalRef}
-          >
+      <Dialog>
+        <DialogTrigger asChild>
+          <Card className="group flex cursor-pointer flex-col overflow-hidden">
+            <div className="relative h-40 w-full group-hover:scale-110">
+              {pokemon.sprites.front_default ||
+              pokemon.sprites.other["official-artwork"].front_default ? (
+                <Image
+                  src={
+                    pokemon.sprites.front_default ||
+                    pokemon.sprites.other["official-artwork"].front_default
+                  }
+                  alt={pokemon.name}
+                  fill
+                  className="object-contain"
+                  sizes="( max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  No Image
+                </div>
+              )}
+            </div>
+            <h3 className="font-code mt-auto bg-primary py-1 text-center text-lg font-semibold  capitalize tracking-wider text-primary-foreground">
+              {pokemon.name}
+            </h3>
+          </Card>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]" ref={modalRef}>
+          <div className="flex flex-col items-center">
             <Image
-              src={pokemonDetail.sprites.front_default}
-              alt={pokemonDetail.name}
+              src={
+                pokemon.sprites.front_default ||
+                pokemon.sprites.other["official-artwork"].front_default
+              }
+              alt={pokemon.name}
               width={96}
               height={96}
             />
-            <h2 className="capitalize mb-4 font-code text-[#61dafb]">
-              {pokemonDetail.name}
+            <h2 className="font-code mb-4 capitalize text-[#61dafb]">
+              {pokemon.name}
             </h2>
             <table className="mb-4">
               <thead>
@@ -116,7 +115,7 @@ const PokemonCard = ({ pokemon }: PokemonCardProps) => {
                 </tr>
               </thead>
               <tbody>
-                {pokemonDetail.stats.map((item) => (
+                {pokemon.stats.map((item) => (
                   <tr key={item.stat.name}>
                     <td className="table-cell">{item.stat.name}</td>
                     <td className="table-cell">{item.base_stat}</td>
@@ -124,31 +123,18 @@ const PokemonCard = ({ pokemon }: PokemonCardProps) => {
                 ))}
               </tbody>
             </table>
-            <BarChart stats={pokemonDetail.stats} />
+            <BarChart stats={pokemon.stats} />
 
             <button
-              className="absolute top-0 right-0"
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
               onClick={downloadPdf}
               data-html2canvas-ignore
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                />
-              </svg>
+              <Download className="h-6 w-6" />
             </button>
           </div>
-        </Modal>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

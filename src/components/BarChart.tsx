@@ -1,11 +1,11 @@
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-} from 'chart.js';
+  CategoryScale,
+  Chart as ChartJS,
+  LinearScale,
+} from "chart.js";
 
-import { Bar } from 'react-chartjs-2';
+import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement);
 
@@ -20,7 +20,7 @@ const BarChart = ({ stats }: BarChartProps) => {
     datasets: [
       {
         data: stats.map((stat) => stat.base_stat),
-        backgroundColor: 'rgba(0, 162, 235)',
+        backgroundColor: "rgba(0, 162, 235)",
       },
     ],
   };
